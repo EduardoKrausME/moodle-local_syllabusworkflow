@@ -1,0 +1,12 @@
+<section class="local-syllabusworkflow-diff">
+    <form action="{{url}}" method="get"><input type="hidden" name="id" value="{{id}}">
+        <label>{{labelbefore}} <select name="before">{{#choices}}<option value="{{id}}" {{#beforeselected}}selected{{/beforeselected}}>{{revision}}</option>{{/choices}}</select></label>
+        <label>{{labelafter}} <select name="after">{{#choices}}<option value="{{id}}" {{#afterselected}}selected{{/afterselected}}>{{revision}}</option>{{/choices}}</select></label>
+        <button type="submit">{{labelcompare}}</button>
+    </form>
+    <p>{{labelbefore}}: {{beforeauthor}} – {{beforedate}}; {{labelafter}}: {{afterauthor}} – {{afterdate}}</p>
+    {{#diffs}}<div class="mb-3"><h3>{{name}} ({{type}})</h3>
+        <div class="row"><section class="col-md-6"><h4>{{labelbefore}}</h4><pre>{{before}}</pre></section>
+        <section class="col-md-6"><h4>{{labelafter}}</h4><pre>{{after}}</pre></section></div>
+    </div>{{/diffs}}
+</section>

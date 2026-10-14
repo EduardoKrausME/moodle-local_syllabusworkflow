@@ -1,0 +1,7 @@
+<article class="local-syllabusworkflow-print">
+    <style media="print">.navbar,.drawer,.breadcrumb,.secondary-navigation,footer {display:none!important}
+    .local-syllabusworkflow-print {font-family:serif;max-width:100%;color:#000}</style>
+    <h1>{{title}}</h1><h2>{{course}}</h2>
+    <p>{{author}} — {{revision}} — <code>{{hash}}</code></p>
+    {{#fields}}<section><h3>{{label}}</h3><p style="white-space:pre-wrap">{{value}}</p></section>{{/fields}}
+</article>

@@ -1,0 +1,59 @@
+name: Moodle Plugin CI
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+jobs:
+  moodle-plugin-ci:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        moodle-branch: [MOODLE_405_STABLE, MOODLE_500_STABLE]
+        php: ['8.2', '8.3']
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: moodle
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DB: pgsql
+      DB_HOST: 127.0.0.1
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: moodle
+      MOODLE_BRANCH: ${{ matrix.moodle-branch }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, mbstring, gd, pgsql, soap, zip
+          coverage: none
+      - name: Install Moodle Plugin CI
+        run: |
+          composer global require moodlehq/moodle-plugin-ci
+          echo "$HOME/.composer/vendor/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.config/composer/vendor/bin" >> "$GITHUB_PATH"
+      - name: Install Moodle test site
+        run: moodle-plugin-ci install -vvv
+      - name: PHP syntax
+        run: moodle-plugin-ci phplint
+      - name: Moodle validation
+        run: moodle-plugin-ci validate
+      - name: Moodle Code Checker
+        run: moodle-plugin-ci phpcs --max-warnings 0
+      - name: Mustache templates
+        run: moodle-plugin-ci mustache
+      - name: JavaScript lint
+        run: moodle-plugin-ci grunt
+      - name: PHPUnit
+        run: moodle-plugin-ci phpunit --fail-on-warning
+      - name: Behat
+        run: moodle-plugin-ci behat
