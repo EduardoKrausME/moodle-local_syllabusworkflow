@@ -1,14 +1,14 @@
 <section class="local-syllabusworkflow-dashboard">
     <h2>{{title}}</h2>
     <div class="mb-3">
-        {{#canedit}}<a class="btn btn-primary" href="{{createurl}}">{{createlabel}}</a>{{/canedit}}
-        {{#modelchoices}}<a class="btn btn-outline-secondary" href="{{url}}">{{name}}</a>{{/modelchoices}}
-        {{#canmanage}}<a class="btn btn-secondary" href="{{templatesurl}}">{{templateslabel}}</a>
-        <a class="btn btn-secondary" href="{{reporturl}}">{{reportlabel}}</a>{{/canmanage}}
+        {{#canedit}}<a class="btn btn-primary" href="{{{createurl}}}">{{createlabel}}</a>{{/canedit}}
+        {{#modelchoices}}<a class="btn btn-outline-secondary" href="{{{url}}}">{{name}}</a>{{/modelchoices}}
+        {{#canmanage}}<a class="btn btn-secondary" href="{{{templatesurl}}}">{{templateslabel}}</a>
+        <a class="btn btn-secondary" href="{{{reporturl}}}">{{reportlabel}}</a>{{/canmanage}}
     </div>
     <table class="generaltable"><thead><tr><th>{{labelcourse}}</th><th>{{labelrevision}}</th>
     <th>{{labelstatus}}</th><th>{{labelview}}</th></tr></thead><tbody>
         {{#plans}}<tr><td>{{courseid}}</td><td>{{revision}}</td><td>{{state}}</td>
-            <td><a href="{{url}}">{{id}}</a></td></tr>{{/plans}}
+            <td><a href="{{{url}}}">{{id}}</a></td></tr>{{/plans}}
     </tbody></table>
 </section>

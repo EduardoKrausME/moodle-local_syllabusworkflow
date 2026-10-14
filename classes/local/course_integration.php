@@ -23,13 +23,27 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Course integration implementation.
+ */
 final class course_integration {
+    /**
+     * Link.
+     *
+     * @param int $planid planid
+     * @return \moodle_url
+     */
     public static function link(int $planid): \moodle_url {
         return new \moodle_url('/local/syllabusworkflow/view.php', ['id' => $planid]);
     }
+    /**
+     * Plans.
+     *
+     * @param int $courseid courseid
+     * @return array
+     */
     public static function plans(int $courseid): array {
         global $DB;
-        return $DB->get_records('local_swf_plan', ['courseid' => $courseid], 'id ASC');
+        return $DB->get_records('local_syllabusworkflow_plan', ['courseid' => $courseid], 'id ASC');
     }
 }

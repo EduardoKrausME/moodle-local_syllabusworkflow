@@ -23,7 +23,6 @@
  */
 
 namespace local_syllabusworkflow;
-defined('MOODLE_INTERNAL') || die();
 use local_syllabusworkflow\local\schema;
 use local_syllabusworkflow\local\institutional_template_manager;
 use local_syllabusworkflow\local\version_manager;
@@ -32,8 +31,20 @@ use local_syllabusworkflow\local\publication_service;
 use local_syllabusworkflow\local\syllabus_repository;
 use local_syllabusworkflow\local\workflow_state_machine;
 use local_syllabusworkflow\local\version_diff_engine;
-/** @coversDefaultClass \local_syllabusworkflow\local\workflow_state_machine */
+/**
+ * Exercise the institutional syllabus workflow.
+ *
+ * @covers \local_syllabusworkflow\local\workflow_state_machine
+ * @covers \local_syllabusworkflow\local\version_manager
+ * @covers \local_syllabusworkflow\local\approval_service
+ * @covers \local_syllabusworkflow\local\publication_service
+ */
 final class workflow_test extends \advanced_testcase {
+    /**
+     * Fixtures.
+     *
+     * @return array
+     */
     private function fixtures(): array {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();
@@ -46,20 +57,41 @@ final class workflow_test extends \advanced_testcase {
         $version = version_manager::create_plan($course->id, $template->id, $teacher->id);
         return [$course, $teacher, $manager, $template, $version];
     }
+    /**
+     * Complete.
+     *
+     * @param array $tuple tuple
+     * @return void
+     */
     private function complete(array $tuple): void {
         [$course, $teacher, $manager, $template, $version] = $tuple;
         $fields = array_fill_keys(array_column(schema::defaults(), 'key'), 'Valid example');
         version_manager::save($version->planid, $version->id, $fields, 0, $teacher->id);
     }
+    /**
+     * Test valid and invalid states.
+     *
+     * @return void
+     */
     public function test_valid_and_invalid_states(): void {
         workflow_state_machine::assert('draft', 'submitted');
         $this->expectException(\moodle_exception::class);
         workflow_state_machine::assert('draft', 'published');
     }
+    /**
+     * Test required field validation.
+     *
+     * @return void
+     */
     public function test_required_field_validation(): void {
         $this->expectException(\moodle_exception::class);
         schema::validate_payload([], schema::defaults());
     }
+    /**
+     * Test create plan and revision.
+     *
+     * @return void
+     */
     public function test_create_plan_and_revision(): void {
         $tuple = $this->fixtures();
         $this->complete($tuple);
@@ -72,6 +104,11 @@ final class workflow_test extends \advanced_testcase {
         $this->assertSame((int)$version->id, (int)$next->parentid);
         $this->assertSame('changes_requested', syllabus_repository::version($version->id)->status);
     }
+    /**
+     * Test published content cannot be edited and publication pointer is correct.
+     *
+     * @return void
+     */
     public function test_published_content_cannot_be_edited_and_publication_pointer_is_correct(): void {
         $tuple = $this->fixtures();
         $this->complete($tuple);
@@ -86,6 +123,11 @@ final class workflow_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         version_manager::save($version->planid, $version->id, [], 1, $teacher->id);
     }
+    /**
+     * Test optimistic concurrency.
+     *
+     * @return void
+     */
     public function test_optimistic_concurrency(): void {
         $tuple = $this->fixtures();
         $this->complete($tuple);
@@ -93,6 +135,11 @@ final class workflow_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         version_manager::save($version->planid, $version->id, [], 0, $teacher->id);
     }
+    /**
+     * Test diff and template versions are distinct.
+     *
+     * @return void
+     */
     public function test_diff_and_template_versions_are_distinct(): void {
         $tuple = $this->fixtures();
         $this->complete($tuple);
@@ -108,6 +155,11 @@ final class workflow_test extends \advanced_testcase {
         $newer->payload = schema::encode($payload);
         $this->assertCount(1, version_diff_engine::compare($older, $newer));
     }
+    /**
+     * Test teacher cannot self approve.
+     *
+     * @return void
+     */
     public function test_teacher_cannot_self_approve(): void {
         $tuple = $this->fixtures();
         $this->complete($tuple);
@@ -117,6 +169,11 @@ final class workflow_test extends \advanced_testcase {
         $this->expectException(\required_capability_exception::class);
         approval_service::decide($version->planid, $teacher->id, true, '');
     }
+    /**
+     * Test approvals are immutable and have logged actor.
+     *
+     * @return void
+     */
     public function test_approvals_are_immutable_and_have_logged_actor(): void {
         global $DB;
         $tuple = $this->fixtures();
@@ -127,12 +184,17 @@ final class workflow_test extends \advanced_testcase {
         approval_service::decide($version->planid, $manager->id, true, 'Checked');
         $frozen = syllabus_repository::version($version->id);
         $this->assertSame(hash('sha256', $frozen->payload), $frozen->contenthash);
-        $approval = $DB->get_record('local_swf_approval', ['versionid' => $version->id], '*', MUST_EXIST);
+        $approval = $DB->get_record('local_syllabusworkflow_approval', ['versionid' => $version->id], '*', MUST_EXIST);
         $this->assertSame((int)$manager->id, (int)$approval->reviewerid);
         $this->assertSame('Checked', $approval->comment);
-        $history = $DB->get_records('local_swf_transition', ['versionid' => $version->id]);
+        $history = $DB->get_records('local_syllabusworkflow_transition', ['versionid' => $version->id]);
         $this->assertCount(3, $history);
     }
+    /**
+     * Test reject wrong version in locked operation.
+     *
+     * @return void
+     */
     public function test_reject_wrong_version_in_locked_operation(): void {
         $tuple = $this->fixtures();
         $this->complete($tuple);
@@ -140,6 +202,11 @@ final class workflow_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         approval_service::submit($version->planid, $manager->id, $teacher->id, $version->id + 900);
     }
+    /**
+     * Test student cannot read draft.
+     *
+     * @return void
+     */
     public function test_student_cannot_read_draft(): void {
         $tuple = $this->fixtures();
         [$course, $teacher, $manager, $template, $version] = $tuple;
@@ -149,6 +216,11 @@ final class workflow_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         syllabus_repository::readable_version($plan, $version->id, $student->id);
     }
+    /**
+     * Test archival revokes current public visibility.
+     *
+     * @return void
+     */
     public function test_archival_revokes_current_public_visibility(): void {
         $tuple = $this->fixtures();
         $this->complete($tuple);

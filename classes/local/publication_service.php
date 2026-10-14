@@ -23,8 +23,18 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Publication service implementation.
+ */
 final class publication_service {
+    /**
+     * Publish.
+     *
+     * @param int $planid planid
+     * @param int $actorid actorid
+     * @param ?int $expectedversionid expectedversionid
+     * @return void
+     */
     public static function publish(int $planid, int $actorid, ?int $expectedversionid = null): void {
         global $DB;
         $notify = version_manager::locked($planid, function() use ($DB, $planid, $actorid, $expectedversionid) {
@@ -41,15 +51,16 @@ final class publication_service {
                 if ($prior->status === workflow_state_machine::PUBLISHED) {
                     audit_history::transition($prior, $prior->status,
                         workflow_state_machine::ARCHIVED, $actorid, 'Superseded');
-                    $DB->set_field('local_swf_version', 'status', workflow_state_machine::ARCHIVED, ['id' => $prior->id]);
+                    $DB->set_field('local_syllabusworkflow_version', 'status', workflow_state_machine::ARCHIVED,
+                        ['id' => $prior->id]);
                 }
             }
             audit_history::transition($version, $version->status, workflow_state_machine::PUBLISHED, $actorid, '');
-            $DB->set_field('local_swf_version', 'status', workflow_state_machine::PUBLISHED, ['id' => $version->id]);
-            $DB->update_record('local_swf_plan', (object)[
+            $DB->set_field('local_syllabusworkflow_version', 'status', workflow_state_machine::PUBLISHED, ['id' => $version->id]);
+            $DB->update_record('local_syllabusworkflow_plan', (object)[
                 'id' => $planid, 'publishedversionid' => $version->id, 'timemodified' => time(),
             ]);
-            $DB->insert_record('local_swf_publication', (object)[
+            $DB->insert_record('local_syllabusworkflow_publication', (object)[
                 'planid' => $plan->id, 'versionid' => $version->id,
                 'courseid' => $plan->courseid, 'actorid' => $actorid, 'timecreated' => time(),
             ]);
@@ -58,6 +69,14 @@ final class publication_service {
         });
         notification_service::send($notify[0], $notify[1], 'published', (string)$notify[0]);
     }
+    /**
+     * Archive.
+     *
+     * @param int $planid planid
+     * @param int $actorid actorid
+     * @param ?int $expectedversionid expectedversionid
+     * @return void
+     */
     public static function archive(int $planid, int $actorid, ?int $expectedversionid = null): void {
         global $DB;
         version_manager::locked($planid, function() use ($DB, $planid, $actorid, $expectedversionid) {
@@ -71,14 +90,14 @@ final class publication_service {
             workflow_state_machine::assert($version->status, workflow_state_machine::ARCHIVED);
             audit_history::transition($version, $version->status,
                 workflow_state_machine::ARCHIVED, $actorid, 'Administrative archive');
-            $DB->update_record('local_swf_version', (object)[
+            $DB->update_record('local_syllabusworkflow_version', (object)[
                 'id' => $version->id, 'status' => workflow_state_machine::ARCHIVED,
                 'timemodified' => time(),
             ]);
             if ($plan->publishedversionid == $version->id) {
-                $DB->set_field('local_swf_plan', 'publishedversionid', null, ['id' => $planid]);
+                $DB->set_field('local_syllabusworkflow_plan', 'publishedversionid', null, ['id' => $planid]);
             }
-            $DB->set_field('local_swf_plan', 'timemodified', time(), ['id' => $planid]);
+            $DB->set_field('local_syllabusworkflow_plan', 'timemodified', time(), ['id' => $planid]);
             $transaction->allow_commit();
         });
     }

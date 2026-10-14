@@ -71,7 +71,7 @@ class behat_local_syllabusworkflow extends behat_base {
     public function i_open_syllabus_for_course(string $shortname): void {
         global $DB;
         $course = $DB->get_record('course', ['shortname' => $shortname], '*', MUST_EXIST);
-        $plans = $DB->get_records('local_swf_plan', ['courseid' => $course->id], 'id DESC', '*', 0, 1);
+        $plans = $DB->get_records('local_syllabusworkflow_plan', ['courseid' => $course->id], 'id DESC', '*', 0, 1);
         $plan = reset($plans);
         if (!$plan) {
             throw new \moodle_exception('noplan', 'local_syllabusworkflow');

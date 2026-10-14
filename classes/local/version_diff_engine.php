@@ -23,8 +23,17 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Version diff engine implementation.
+ */
 final class version_diff_engine {
+    /**
+     * Compare.
+     *
+     * @param \stdClass $previous previous
+     * @param \stdClass $current current
+     * @return array
+     */
     public static function compare(\stdClass $previous, \stdClass $current): array {
         if ((int)$previous->planid !== (int)$current->planid) {
             throw new \moodle_exception('wrongplan', 'local_syllabusworkflow');

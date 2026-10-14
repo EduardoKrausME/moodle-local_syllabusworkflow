@@ -37,7 +37,7 @@ if ($courseid) {
     require_login();
     $context = \context_system::instance();
     require_capability('local/syllabusworkflow:manage', $context);
-    $plans = $DB->get_records('local_swf_plan', [], 'timemodified DESC', '*', 0, 200);
+    $plans = $DB->get_records('local_syllabusworkflow_plan', [], 'timemodified DESC', '*', 0, 200);
 }
 $PAGE->set_url('/local/syllabusworkflow/index.php', ['courseid' => $courseid]);
 $PAGE->set_context($context);
@@ -64,7 +64,7 @@ $canedit = $courseid && has_capability('local/syllabusworkflow:edit', $context);
 $canmanage = has_capability('local/syllabusworkflow:manage', \context_system::instance());
 $modelchoices = [];
 if ($canedit) {
-    foreach ($DB->get_records('local_swf_template', ['enabled' => 1], 'name ASC') as $model) {
+    foreach ($DB->get_records('local_syllabusworkflow_template', ['enabled' => 1], 'name ASC') as $model) {
         $modelchoices[] = [
             'name' => $model->name,
             'url' => (new \moodle_url('/local/syllabusworkflow/edit.php', [

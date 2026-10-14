@@ -23,8 +23,16 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Transition validator implementation.
+ */
 final class transition_validator {
+    /**
+     * Capability.
+     *
+     * @param string $operation operation
+     * @return string
+     */
     public static function capability(string $operation): string {
         $map = [
             'submit' => 'edit', 'review' => 'review', 'changes' => 'review',
@@ -36,6 +44,15 @@ final class transition_validator {
         }
         return 'local/syllabusworkflow:' . $map[$operation];
     }
+    /**
+     * Require.
+     *
+     * @param \stdClass $plan plan
+     * @param \stdClass $version version
+     * @param int $actorid actorid
+     * @param string $operation operation
+     * @return void
+     */
     public static function require(\stdClass $plan, \stdClass $version, int $actorid,
             string $operation): void {
         $context = syllabus_repository::course_context($plan);
@@ -47,7 +64,7 @@ final class transition_validator {
         global $DB;
         if ($operation === 'approve' &&
                 ($actorid === (int)$version->createdby || $actorid === (int)$plan->createdby ||
-                $DB->record_exists('local_swf_audit', [
+                $DB->record_exists('local_syllabusworkflow_audit', [
                     'versionid' => $version->id, 'actorid' => $actorid, 'action' => 'draft_saved',
                 ])) && !has_capability('local/syllabusworkflow:selfapprove', $context, $actorid)) {
             throw new \moodle_exception('selfapproval', 'local_syllabusworkflow');

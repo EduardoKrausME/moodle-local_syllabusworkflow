@@ -43,7 +43,7 @@ if ($id) {
 } else {
     $templateid = optional_param('templateversionid', 0, PARAM_INT);
     if ($templateid) {
-        if (!$DB->record_exists('local_swf_template', ['activeversionid' => $templateid, 'enabled' => 1])) {
+        if (!$DB->record_exists('local_syllabusworkflow_template', ['activeversionid' => $templateid, 'enabled' => 1])) {
             throw new \moodle_exception('invalidschema', 'local_syllabusworkflow');
         }
         $template = \local_syllabusworkflow\local\syllabus_repository::template($templateid);
@@ -57,7 +57,13 @@ $PAGE->set_url('/local/syllabusworkflow/edit.php', $id ? ['id' => $id] : ['cours
 $PAGE->set_context($context);
 $PAGE->set_title(get_string('editplan', 'local_syllabusworkflow'));
 $PAGE->set_heading(get_string('editplan', 'local_syllabusworkflow'));
-$form = new \local_syllabusworkflow\form\plan_form(null, ['fields' => $fields]);
+$formurl = new \moodle_url('/local/syllabusworkflow/edit.php', [
+    'courseid' => $courseid, 'id' => $id,
+]);
+if (!$id && !empty($templateid)) {
+    $formurl->param('templateversionid', $templateid);
+}
+$form = new \local_syllabusworkflow\form\plan_form($formurl, ['fields' => $fields]);
 if ($form->is_cancelled()) {
     redirect(new \moodle_url('/local/syllabusworkflow/index.php', ['courseid' => $courseid]));
 }

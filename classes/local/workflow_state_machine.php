@@ -23,15 +23,25 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Workflow state machine implementation.
+ */
 final class workflow_state_machine {
+    /** Draft. */
     public const DRAFT = 'draft';
+    /** Submitted. */
     public const SUBMITTED = 'submitted';
+    /** Under review. */
     public const UNDER_REVIEW = 'under_review';
+    /** Changes requested. */
     public const CHANGES_REQUESTED = 'changes_requested';
+    /** Approved. */
     public const APPROVED = 'approved';
+    /** Published. */
     public const PUBLISHED = 'published';
+    /** Archived. */
     public const ARCHIVED = 'archived';
+    /** Transitions. */
     public const TRANSITIONS = [
         self::DRAFT => [self::SUBMITTED, self::ARCHIVED],
         self::SUBMITTED => [self::UNDER_REVIEW, self::CHANGES_REQUESTED],
@@ -41,6 +51,13 @@ final class workflow_state_machine {
         self::PUBLISHED => [self::ARCHIVED],
         self::ARCHIVED => [],
     ];
+    /**
+     * Assert.
+     *
+     * @param string $from from
+     * @param string $to to
+     * @return void
+     */
     public static function assert(string $from, string $to): void {
         if (!in_array($to, self::TRANSITIONS[$from] ?? [], true)) {
             throw new \moodle_exception('invalidtransition', 'local_syllabusworkflow');

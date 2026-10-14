@@ -3,28 +3,28 @@
     <dl><dt>{{labelrevision}}</dt><dd>{{revision}}</dd><dt>{{labelstatus}}</dt><dd>{{status}}</dd>
         <dt>{{labelauthor}}</dt><dd>{{author}}</dd><dt>{{labelhash}}</dt><dd><code>{{hash}}</code></dd></dl>
     <div class="mb-3">
-        <a href="{{exporturl}}">{{labelexport}}</a>
-        <a href="{{downloadurl}}">{{labeldownload}}</a>
+        <a href="{{{exporturl}}}">{{labelexport}}</a>
+        <a href="{{{downloadurl}}}">{{labeldownload}}</a>
         <button type="button" class="btn btn-link" data-swf-copy="{{publicurl}}">{{labelcopy}}</button>
-        {{#privileged}}<a href="{{compareurl}}">{{labelcompare}}</a>{{/privileged}}
-        {{#canedit}}<a class="btn btn-primary" href="{{edurl}}">{{labeledit}}</a>{{/canedit}}
+        {{#privileged}}<a href="{{{compareurl}}}">{{labelcompare}}</a>{{/privileged}}
+        {{#canedit}}<a class="btn btn-primary" href="{{{edurl}}}">{{labeledit}}</a>{{/canedit}}
     </div>
     {{#fields}}<section class="mb-4"><h3>{{label}}</h3><div style="white-space:pre-wrap">{{value}}</div></section>{{/fields}}
     {{#privileged}}
         <h3>{{labelhistory}}</h3>
-        <ul>{{#versions}}<li><a href="{{url}}">{{labelrevision}} {{revision}}</a> — {{status}}</li>{{/versions}}</ul>
+        <ul>{{#versions}}<li><a href="{{{url}}}">{{labelrevision}} {{revision}}</a> — {{status}}</li>{{/versions}}</ul>
         <h3>{{labeltransitions}}</h3>
         <table class="generaltable"><tbody>{{#approvals}}<tr><td>{{date}}</td><td>{{actor}}</td>
         <td>{{stage}}</td><td>{{decision}}</td><td>{{comment}}</td></tr>{{/approvals}}</tbody></table>
         <table class="generaltable"><tbody>{{#transitions}}<tr><td>{{date}}</td><td>{{actor}}</td>
         <td>{{from}} → {{to}}</td><td>{{comment}}</td><td><code>{{operationid}}</code></td></tr>{{/transitions}}</tbody></table>
-        {{#cansubmit}}<a class="btn btn-primary" href="{{submiturl}}">{{labelsubmit}}</a>{{/cansubmit}}
-        {{#canreview}}<a class="btn btn-primary" href="{{reviewurl}}">{{labelreview}}</a>{{/canreview}}
-        {{#candecide}}<a class="btn btn-primary" href="{{approveurl}}">{{labelapprove}}</a>
-        <a class="btn btn-secondary" href="{{changesurl}}">{{labelchanges}}</a>{{/candecide}}
-        {{#canpublish}}<a class="btn btn-primary" href="{{publishurl}}">{{labelpublish}}</a>{{/canpublish}}
-        {{#canrevise}}<a class="btn btn-secondary" href="{{reviseurl}}">{{labelrevise}}</a>{{/canrevise}}
-        {{#candelegate}}<a class="btn btn-secondary" href="{{delegateurl}}">{{labeldelegate}}</a>{{/candelegate}}
-        {{#canarchive}}<a class="btn btn-secondary" href="{{archiveurl}}">{{labelarchive}}</a>{{/canarchive}}
+        {{#cansubmit}}<a class="btn btn-primary" href="{{{submiturl}}}">{{labelsubmit}}</a>{{/cansubmit}}
+        {{#canreview}}<a class="btn btn-primary" href="{{{reviewurl}}}">{{labelreview}}</a>{{/canreview}}
+        {{#candecide}}<a class="btn btn-primary" href="{{{approveurl}}}">{{labelapprove}}</a>
+        <a class="btn btn-secondary" href="{{{changesurl}}}">{{labelchanges}}</a>{{/candecide}}
+        {{#canpublish}}<a class="btn btn-primary" href="{{{publishurl}}}">{{labelpublish}}</a>{{/canpublish}}
+        {{#canrevise}}<a class="btn btn-secondary" href="{{{reviseurl}}}">{{labelrevise}}</a>{{/canrevise}}
+        {{#candelegate}}<a class="btn btn-secondary" href="{{{delegateurl}}}">{{labeldelegate}}</a>{{/candelegate}}
+        {{#canarchive}}<a class="btn btn-secondary" href="{{{archiveurl}}}">{{labelarchive}}</a>{{/canarchive}}
     {{/privileged}}
 </article>

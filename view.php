@@ -49,7 +49,7 @@ foreach ($definition as $field) {
 }
 $versions = [];
 if ($privileged) {
-    foreach ($DB->get_records('local_swf_version', ['planid' => $id], 'revision DESC') as $old) {
+    foreach ($DB->get_records('local_syllabusworkflow_version', ['planid' => $id], 'revision DESC') as $old) {
         $versions[] = ['revision' => $old->revision,
             'status' => get_string('state_' . $old->status, 'local_syllabusworkflow'),
             'url' => (new \moodle_url('/local/syllabusworkflow/view.php',
@@ -59,14 +59,14 @@ if ($privileged) {
 $transitions = [];
 $approvals = [];
 if ($privileged) {
-    foreach ($DB->get_records('local_swf_approval', ['versionid' => $version->id], 'id ASC') as $decision) {
+    foreach ($DB->get_records('local_syllabusworkflow_approval', ['versionid' => $version->id], 'id ASC') as $decision) {
         $approvals[] = [
             'actor' => $decision->reviewerid, 'stage' => $decision->stage + 1,
             'decision' => $decision->decision, 'comment' => $decision->comment,
             'date' => userdate($decision->timecreated),
         ];
     }
-    foreach ($DB->get_records('local_swf_transition', ['versionid' => $version->id], 'id ASC') as $change) {
+    foreach ($DB->get_records('local_syllabusworkflow_transition', ['versionid' => $version->id], 'id ASC') as $change) {
         $transitions[] = ['from' => $change->fromstate, 'to' => $change->tostate,
             'actor' => $change->actorid, 'date' => userdate($change->timecreated),
             'comment' => $change->comment, 'operationid' => $change->operationid];

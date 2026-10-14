@@ -23,8 +23,18 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Version manager implementation.
+ */
 final class version_manager {
+    /**
+     * Create plan.
+     *
+     * @param int $courseid courseid
+     * @param int $templateversionid templateversionid
+     * @param int $actorid actorid
+     * @return \stdClass
+     */
     public static function create_plan(int $courseid, int $templateversionid, int $actorid): \stdClass {
         global $DB;
         $context = \context_course::instance($courseid);
@@ -45,29 +55,47 @@ final class version_manager {
         }
         $now = time();
         $transaction = $DB->start_delegated_transaction();
-        $planid = $DB->insert_record('local_swf_plan', (object)[
+        $planid = $DB->insert_record('local_syllabusworkflow_plan', (object)[
             'courseid' => $courseid, 'templateversionid' => $templateversionid,
             'createdby' => $actorid, 'timecreated' => $now, 'timemodified' => $now,
         ]);
         $version = self::insert($planid, 1, null, $template, $payload, $actorid);
-        $DB->set_field('local_swf_plan', 'currentversionid', $version->id, ['id' => $planid]);
+        $DB->set_field('local_syllabusworkflow_plan', 'currentversionid', $version->id, ['id' => $planid]);
         audit_history::log($version, 'created', $actorid);
         $transaction->allow_commit();
         return $version;
     }
+    /**
+     * Snapshot.
+     *
+     * @param \stdClass $plan plan
+     * @param \stdClass $template template
+     * @return string
+     */
     public static function snapshot(\stdClass $plan, \stdClass $template): string {
         global $DB;
         $course = $DB->get_record('course', ['id' => $plan->courseid], 'id,fullname,shortname,idnumber', MUST_EXIST);
-        $author = $DB->get_record('user', ['id' => $plan->createdby], 'id,firstname,lastname', MUST_EXIST);
+        $author = $DB->get_record('user', ['id' => $plan->createdby], '*', MUST_EXIST);
         return schema::encode([
             'courseid' => $course->id, 'fullname' => $course->fullname,
             'shortname' => $course->shortname, 'idnumber' => $course->idnumber,
             'author' => fullname($author), 'templateid' => $template->templateid,
             'templateversion' => $template->revision,
-            'templatename' => $DB->get_field('local_swf_template', 'name', ['id' => $template->templateid]),
+            'templatename' => $DB->get_field('local_syllabusworkflow_template', 'name', ['id' => $template->templateid]),
             'institution' => schema::decode($template->identityjson),
         ]);
     }
+    /**
+     * Insert.
+     *
+     * @param int $planid planid
+     * @param int $revision revision
+     * @param ?int $parentid parentid
+     * @param \stdClass $template template
+     * @param array $payload payload
+     * @param int $actorid actorid
+     * @return \stdClass
+     */
     private static function insert(int $planid, int $revision, ?int $parentid,
             \stdClass $template, array $payload, int $actorid): \stdClass {
         global $DB;
@@ -82,9 +110,16 @@ final class version_manager {
             'status' => workflow_state_machine::DRAFT, 'lockversion' => 0,
             'createdby' => $actorid, 'timecreated' => $now, 'timemodified' => $now,
         ];
-        $record->id = $DB->insert_record('local_swf_version', $record);
+        $record->id = $DB->insert_record('local_syllabusworkflow_version', $record);
         return $record;
     }
+    /**
+     * Locked.
+     *
+     * @param int $planid planid
+     * @param callable $callback callback
+     * @return mixed
+     */
     public static function locked(int $planid, callable $callback) {
         $factory = \core\lock\lock_config::get_lock_factory('local_syllabusworkflow');
         $lock = $factory->get_lock('plan_' . $planid, 20);
@@ -97,6 +132,16 @@ final class version_manager {
             $lock->release();
         }
     }
+    /**
+     * Save.
+     *
+     * @param int $planid planid
+     * @param int $versionid versionid
+     * @param array $fields fields
+     * @param int $lockversion lockversion
+     * @param int $actorid actorid
+     * @return void
+     */
     public static function save(int $planid, int $versionid, array $fields, int $lockversion, int $actorid): void {
         global $DB;
         self::locked($planid, function() use ($DB, $planid, $versionid, $fields, $lockversion, $actorid) {
@@ -118,16 +163,24 @@ final class version_manager {
             }, $definition);
             $payload = schema::validate_payload($fields, $relaxed, $previous);
             $encoded = schema::encode($payload);
-            $DB->update_record('local_swf_version', (object)[
+            $DB->update_record('local_syllabusworkflow_version', (object)[
                 'id' => $versionid, 'payload' => $encoded,
                 'contenthash' => hash('sha256', $encoded),
                 'lockversion' => $version->lockversion + 1, 'timemodified' => time(),
             ]);
-            $DB->set_field('local_swf_plan', 'timemodified', time(), ['id' => $planid]);
+            $DB->set_field('local_syllabusworkflow_plan', 'timemodified', time(), ['id' => $planid]);
             audit_history::log($version, 'draft_saved', $actorid);
             $transaction->allow_commit();
         });
     }
+    /**
+     * Fork.
+     *
+     * @param int $planid planid
+     * @param int $actorid actorid
+     * @param ?int $expectedversionid expectedversionid
+     * @return \stdClass
+     */
     public static function fork(int $planid, int $actorid, ?int $expectedversionid = null): \stdClass {
         global $DB;
         return self::locked($planid, function() use ($DB, $planid, $actorid, $expectedversionid) {
@@ -145,7 +198,7 @@ final class version_manager {
             $template = syllabus_repository::template($source->templateversionid);
             $revision = self::insert($planid, $source->revision + 1, $source->id,
                 $template, schema::decode($source->payload), $actorid);
-            $DB->update_record('local_swf_plan', (object)[
+            $DB->update_record('local_syllabusworkflow_plan', (object)[
                 'id' => $planid, 'currentversionid' => $revision->id, 'timemodified' => time(),
             ]);
             audit_history::log($revision, 'forked', $actorid, (string)$source->id);

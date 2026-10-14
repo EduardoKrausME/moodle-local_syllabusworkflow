@@ -23,10 +23,17 @@
  */
 
 namespace local_syllabusworkflow\form;
-defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
+/**
+ * Plan form implementation.
+ */
 final class plan_form extends \moodleform {
+    /**
+     * Definition.
+     *
+     * @return void
+     */
     protected function definition(): void {
         $mform = $this->_form;
         $fields = $this->_customdata['fields'];

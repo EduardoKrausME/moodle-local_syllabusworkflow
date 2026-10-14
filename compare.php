@@ -33,7 +33,7 @@ if (!has_capability('local/syllabusworkflow:edit', $context) &&
         !has_capability('local/syllabusworkflow:review', $context)) {
     require_capability('local/syllabusworkflow:edit', $context);
 }
-$versions = array_values($DB->get_records('local_swf_version', ['planid' => $id], 'revision DESC'));
+$versions = array_values($DB->get_records('local_syllabusworkflow_version', ['planid' => $id], 'revision DESC'));
 if (!$versions) {
     throw new \moodle_exception('wrongplan', 'local_syllabusworkflow');
 }

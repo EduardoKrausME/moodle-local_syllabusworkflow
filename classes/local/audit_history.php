@@ -23,13 +23,25 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Audit history implementation.
+ */
 final class audit_history {
+    /**
+     * Transition.
+     *
+     * @param \stdClass $version version
+     * @param string $from from
+     * @param string $to to
+     * @param int $actorid actorid
+     * @param string $comment comment
+     * @return void
+     */
     public static function transition(\stdClass $version, string $from, string $to,
             int $actorid, string $comment): void {
         global $DB;
         workflow_state_machine::assert($from, $to);
-        $DB->insert_record('local_swf_transition', (object)[
+        $DB->insert_record('local_syllabusworkflow_transition', (object)[
             'versionid' => $version->id, 'fromstate' => $from, 'tostate' => $to,
             'actorid' => $actorid, 'comment' => $comment,
             'operationid' => bin2hex(random_bytes(16)), 'timecreated' => time(),
@@ -41,9 +53,18 @@ final class audit_history {
             'other' => ['planid' => $version->planid, 'action' => $to],
         ])->trigger();
     }
+    /**
+     * Log.
+     *
+     * @param \stdClass $version version
+     * @param string $action action
+     * @param int $actorid actorid
+     * @param string $comment comment
+     * @return void
+     */
     public static function log(\stdClass $version, string $action, int $actorid, string $comment = ''): void {
         global $DB;
-        $DB->insert_record('local_swf_audit', (object)[
+        $DB->insert_record('local_syllabusworkflow_audit', (object)[
             'versionid' => $version->id, 'action' => $action,
             'actorid' => $actorid, 'comment' => $comment,
             'operationid' => bin2hex(random_bytes(16)), 'timecreated' => time(),

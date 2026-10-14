@@ -23,10 +23,17 @@
  */
 
 namespace local_syllabusworkflow\form;
-defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
+/**
+ * Action form implementation.
+ */
 final class action_form extends \moodleform {
+    /**
+     * Definition.
+     *
+     * @return void
+     */
     protected function definition(): void {
         $form = $this->_form;
         $action = $this->_customdata['action'];

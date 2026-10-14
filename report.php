@@ -31,7 +31,7 @@ $PAGE->set_context($context);
 $PAGE->set_title(get_string('reports', 'local_syllabusworkflow'));
 $PAGE->set_heading(get_string('reports', 'local_syllabusworkflow'));
 $sql = 'SELECT p.id, p.courseid, v.revision, v.status, v.timemodified
-          FROM {local_swf_plan} p JOIN {local_swf_version} v ON v.id = p.currentversionid
+          FROM {local_syllabusworkflow_plan} p JOIN {local_syllabusworkflow_version} v ON v.id = p.currentversionid
       ORDER BY v.timemodified DESC';
 $pending = [];
 $approved = [];

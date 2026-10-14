@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <XMLDB PATH="local/syllabusworkflow/db" VERSION="20261014" COMMENT="Syllabus approval workflow schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
-    <TABLE NAME="local_swf_template" COMMENT="Institutional template identity">
+    <TABLE NAME="local_syllabusworkflow_template" COMMENT="Institutional template identity">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true"/>
@@ -12,7 +12,7 @@
       </FIELDS>
       <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/></KEYS>
     </TABLE>
-    <TABLE NAME="local_swf_tplversion" COMMENT="Immutable institutional template revisions">
+    <TABLE NAME="local_syllabusworkflow_tplversion" COMMENT="Immutable institutional template revisions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="templateid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -24,10 +24,10 @@
         <FIELD NAME="createdby" TYPE="int" LENGTH="10" NOTNULL="true"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="templatefk" TYPE="foreign" FIELDS="templateid" REFTABLE="local_swf_template" REFFIELDS="id"/></KEYS>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="templatefk" TYPE="foreign" FIELDS="templateid" REFTABLE="local_syllabusworkflow_template" REFFIELDS="id"/></KEYS>
       <INDEXES><INDEX NAME="templrev" UNIQUE="true" FIELDS="templateid, revision"/></INDEXES>
     </TABLE>
-    <TABLE NAME="local_swf_plan" COMMENT="Stable plan and currently published version pointers">
+    <TABLE NAME="local_syllabusworkflow_plan" COMMENT="Stable plan and currently published version pointers">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -38,10 +38,9 @@
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="coursefk" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/><KEY NAME="templateversionfk" TYPE="foreign" FIELDS="templateversionid" REFTABLE="local_swf_tplversion" REFFIELDS="id"/></KEYS>
-      <INDEXES><INDEX NAME="course" UNIQUE="false" FIELDS="courseid"/></INDEXES>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="coursefk" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/><KEY NAME="templateversionfk" TYPE="foreign" FIELDS="templateversionid" REFTABLE="local_syllabusworkflow_tplversion" REFFIELDS="id"/></KEYS>
     </TABLE>
-    <TABLE NAME="local_swf_version" COMMENT="Full immutable submitted/approved revisions and mutable drafts">
+    <TABLE NAME="local_syllabusworkflow_version" COMMENT="Full immutable submitted/approved revisions and mutable drafts">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -57,10 +56,10 @@
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="planfk" TYPE="foreign" FIELDS="planid" REFTABLE="local_swf_plan" REFFIELDS="id"/><KEY NAME="versiontemplatefk" TYPE="foreign" FIELDS="templateversionid" REFTABLE="local_swf_tplversion" REFFIELDS="id"/></KEYS>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="planfk" TYPE="foreign" FIELDS="planid" REFTABLE="local_syllabusworkflow_plan" REFFIELDS="id"/><KEY NAME="versiontemplatefk" TYPE="foreign" FIELDS="templateversionid" REFTABLE="local_syllabusworkflow_tplversion" REFFIELDS="id"/></KEYS>
       <INDEXES><INDEX NAME="planrev" UNIQUE="true" FIELDS="planid, revision"/><INDEX NAME="status" UNIQUE="false" FIELDS="status"/></INDEXES>
     </TABLE>
-    <TABLE NAME="local_swf_assignment" COMMENT="Review assignments by workflow stage">
+    <TABLE NAME="local_syllabusworkflow_assignment" COMMENT="Review assignments by workflow stage">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="versionid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -71,10 +70,10 @@
         <FIELD NAME="assignedby" TYPE="int" LENGTH="10" NOTNULL="true"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_swf_version" REFFIELDS="id"/></KEYS>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_syllabusworkflow_version" REFFIELDS="id"/></KEYS>
       <INDEXES><INDEX NAME="reviewerstatus" UNIQUE="false" FIELDS="reviewerid, status"/><INDEX NAME="assignment" UNIQUE="true" FIELDS="versionid, stage, reviewerid"/></INDEXES>
     </TABLE>
-    <TABLE NAME="local_swf_approval" COMMENT="Immutable reviewer decisions">
+    <TABLE NAME="local_syllabusworkflow_approval" COMMENT="Immutable reviewer decisions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="versionid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -84,10 +83,10 @@
         <FIELD NAME="comment" TYPE="text" NOTNULL="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_swf_version" REFFIELDS="id"/></KEYS>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_syllabusworkflow_version" REFFIELDS="id"/></KEYS>
       <INDEXES><INDEX NAME="versionstage" UNIQUE="false" FIELDS="versionid, stage"/></INDEXES>
     </TABLE>
-    <TABLE NAME="local_swf_transition" COMMENT="Append-only state transition log">
+    <TABLE NAME="local_syllabusworkflow_transition" COMMENT="Append-only state transition log">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="versionid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -98,10 +97,10 @@
         <FIELD NAME="operationid" TYPE="char" LENGTH="64" NOTNULL="true"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_swf_version" REFFIELDS="id"/></KEYS>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_syllabusworkflow_version" REFFIELDS="id"/></KEYS>
       <INDEXES><INDEX NAME="operationid" UNIQUE="true" FIELDS="operationid"/><INDEX NAME="history" UNIQUE="false" FIELDS="versionid, timecreated"/></INDEXES>
     </TABLE>
-    <TABLE NAME="local_swf_publication" COMMENT="Append-only publication history">
+    <TABLE NAME="local_syllabusworkflow_publication" COMMENT="Append-only publication history">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -110,10 +109,10 @@
         <FIELD NAME="actorid" TYPE="int" LENGTH="10" NOTNULL="true"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="planfk" TYPE="foreign" FIELDS="planid" REFTABLE="local_swf_plan" REFFIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_swf_version" REFFIELDS="id"/></KEYS>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="planfk" TYPE="foreign" FIELDS="planid" REFTABLE="local_syllabusworkflow_plan" REFFIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_syllabusworkflow_version" REFFIELDS="id"/></KEYS>
       <INDEXES><INDEX NAME="plancreated" UNIQUE="false" FIELDS="planid, timecreated"/></INDEXES>
     </TABLE>
-    <TABLE NAME="local_swf_notice" COMMENT="Message deduplication / sending ledger">
+    <TABLE NAME="local_syllabusworkflow_notice" COMMENT="Message deduplication / sending ledger">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="versionid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -122,10 +121,10 @@
         <FIELD NAME="dedupekey" TYPE="char" LENGTH="64" NOTNULL="true"/>
         <FIELD NAME="timesent" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_swf_version" REFFIELDS="id"/></KEYS>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_syllabusworkflow_version" REFFIELDS="id"/></KEYS>
       <INDEXES><INDEX NAME="dedupe" UNIQUE="true" FIELDS="dedupekey"/></INDEXES>
     </TABLE>
-    <TABLE NAME="local_swf_audit" COMMENT="Append-only record of edits and delegations">
+    <TABLE NAME="local_syllabusworkflow_audit" COMMENT="Append-only record of edits and delegations">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="versionid" TYPE="int" LENGTH="10" NOTNULL="true"/>
@@ -135,8 +134,8 @@
         <FIELD NAME="operationid" TYPE="char" LENGTH="64" NOTNULL="true"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_swf_version" REFFIELDS="id"/></KEYS>
-      <INDEXES><INDEX NAME="operation" UNIQUE="true" FIELDS="operationid"/><INDEX NAME="version" UNIQUE="false" FIELDS="versionid"/></INDEXES>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="versionfk" TYPE="foreign" FIELDS="versionid" REFTABLE="local_syllabusworkflow_version" REFFIELDS="id"/></KEYS>
+      <INDEXES><INDEX NAME="operation" UNIQUE="true" FIELDS="operationid"/></INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

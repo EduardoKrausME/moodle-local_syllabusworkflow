@@ -46,7 +46,7 @@ if ($action === 'archive') {
 $reviewers = [];
 if (in_array($action, ['submit', 'delegate'], true)) {
     $all = get_users_by_capability($context, 'local/syllabusworkflow:approve',
-        'u.id,u.firstname,u.lastname', 'u.firstname ASC, u.lastname ASC');
+        'u.*', 'u.firstname ASC, u.lastname ASC');
     foreach ($all as $user) {
         $reviewers[$user->id] = fullname($user);
     }

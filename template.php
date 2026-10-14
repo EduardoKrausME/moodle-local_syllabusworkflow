@@ -29,7 +29,7 @@ require_capability('local/syllabusworkflow:manage', $context);
 $templateid = optional_param('templateid', 0, PARAM_INT);
 $version = null;
 if ($templateid) {
-    $existing = $DB->get_record('local_swf_template', ['id' => $templateid], '*', MUST_EXIST);
+    $existing = $DB->get_record('local_syllabusworkflow_template', ['id' => $templateid], '*', MUST_EXIST);
     $version = \local_syllabusworkflow\local\syllabus_repository::template($existing->activeversionid);
 }
 $PAGE->set_url('/local/syllabusworkflow/template.php', ['templateid' => $templateid]);
@@ -67,7 +67,7 @@ $defaults = ['templateid' => $templateid,
     'identityjson' => $version ? $version->identityjson : '{}'];
 $form->set_data((object)$defaults);
 $templates = [];
-foreach ($DB->get_records('local_swf_template', [], 'name ASC') as $model) {
+foreach ($DB->get_records('local_syllabusworkflow_template', [], 'name ASC') as $model) {
     $templates[] = [
         'name' => $model->name,
         'url' => (new \moodle_url('/local/syllabusworkflow/template.php',

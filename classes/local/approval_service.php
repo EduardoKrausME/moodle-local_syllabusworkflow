@@ -23,16 +23,36 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Approval service implementation.
+ */
 final class approval_service {
+    /**
+     * Set state.
+     *
+     * @param \stdClass $version version
+     * @param string $state state
+     * @param int $actorid actorid
+     * @param string $comment comment
+     * @return void
+     */
     private static function set_state(\stdClass $version, string $state, int $actorid, string $comment): void {
         global $DB;
         workflow_state_machine::assert($version->status, $state);
         audit_history::transition($version, $version->status, $state, $actorid, $comment);
-        $DB->update_record('local_swf_version', (object)[
+        $DB->update_record('local_syllabusworkflow_version', (object)[
             'id' => $version->id, 'status' => $state, 'timemodified' => time(),
         ]);
     }
+    /**
+     * Assign.
+     *
+     * @param \stdClass $version version
+     * @param int $stage stage
+     * @param int $fallback fallback
+     * @param int $actorid actorid
+     * @return \stdClass
+     */
     private static function assign(\stdClass $version, int $stage, int $fallback, int $actorid): \stdClass {
         global $DB;
         $template = syllabus_repository::template($version->templateversionid);
@@ -52,9 +72,18 @@ final class approval_service {
             'duedate' => $stages[$stage]['days'] ? time() + (int)$stages[$stage]['days'] * DAYSECS : 0,
             'status' => 'pending', 'assignedby' => $actorid, 'timecreated' => time(),
         ];
-        $record->id = $DB->insert_record('local_swf_assignment', $record);
+        $record->id = $DB->insert_record('local_syllabusworkflow_assignment', $record);
         return $record;
     }
+    /**
+     * Submit.
+     *
+     * @param int $planid planid
+     * @param int $reviewerid reviewerid
+     * @param int $actorid actorid
+     * @param ?int $expectedversionid expectedversionid
+     * @return void
+     */
     public static function submit(int $planid, int $reviewerid, int $actorid, ?int $expectedversionid = null): void {
         global $DB;
         $assigned = version_manager::locked($planid, function() use ($DB, $planid, $reviewerid, $actorid, $expectedversionid) {
@@ -75,6 +104,14 @@ final class approval_service {
         });
         notification_service::send($assigned[0], $assigned[1], 'submitted', 'initial');
     }
+    /**
+     * Begin.
+     *
+     * @param int $planid planid
+     * @param int $actorid actorid
+     * @param ?int $expectedversionid expectedversionid
+     * @return void
+     */
     public static function begin(int $planid, int $actorid, ?int $expectedversionid = null): void {
         global $DB;
         version_manager::locked($planid, function() use ($DB, $planid, $actorid, $expectedversionid) {
@@ -90,12 +127,29 @@ final class approval_service {
             $transaction->allow_commit();
         });
     }
+    /**
+     * Require pending.
+     *
+     * @param int $versionid versionid
+     * @param int $userid userid
+     * @return \stdClass
+     */
     private static function require_pending(int $versionid, int $userid): \stdClass {
         global $DB;
-        return $DB->get_record('local_swf_assignment', [
+        return $DB->get_record('local_syllabusworkflow_assignment', [
             'versionid' => $versionid, 'reviewerid' => $userid, 'status' => 'pending',
         ], '*', MUST_EXIST);
     }
+    /**
+     * Decide.
+     *
+     * @param int $planid planid
+     * @param int $actorid actorid
+     * @param bool $approve approve
+     * @param string $comment comment
+     * @param ?int $expectedversionid expectedversionid
+     * @return void
+     */
     public static function decide(int $planid, int $actorid, bool $approve, string $comment, ?int $expectedversionid = null): void {
         global $DB;
         $notify = version_manager::locked($planid, function() use ($DB, $planid, $actorid, $approve, $comment, $expectedversionid) {
@@ -112,12 +166,12 @@ final class approval_service {
                 throw new \moodle_exception('invaliddecision', 'local_syllabusworkflow');
             }
             $assignment = self::require_pending($version->id, $actorid);
-            $DB->insert_record('local_swf_approval', (object)[
+            $DB->insert_record('local_syllabusworkflow_approval', (object)[
                 'versionid' => $version->id, 'stage' => $assignment->stage,
                 'reviewerid' => $actorid, 'decision' => $approve ? 'approved' : 'changes_requested',
                 'comment' => $comment, 'timecreated' => time(),
             ]);
-            $DB->set_field('local_swf_assignment', 'status', 'completed', ['id' => $assignment->id]);
+            $DB->set_field('local_syllabusworkflow_assignment', 'status', 'completed', ['id' => $assignment->id]);
             if (!$approve) {
                 self::set_state($version, workflow_state_machine::CHANGES_REQUESTED, $actorid, $comment);
                 $recipient = $version->createdby;
@@ -140,6 +194,15 @@ final class approval_service {
         });
         notification_service::send($notify[0], $notify[1], $notify[2], $notify[3]);
     }
+    /**
+     * Delegate.
+     *
+     * @param int $planid planid
+     * @param int $newreviewer newreviewer
+     * @param int $actorid actorid
+     * @param ?int $expectedversionid expectedversionid
+     * @return void
+     */
     public static function delegate(int $planid, int $newreviewer, int $actorid, ?int $expectedversionid = null): void {
         global $DB;
         version_manager::locked($planid, function() use ($DB, $planid, $newreviewer, $actorid, $expectedversionid) {
@@ -156,10 +219,10 @@ final class approval_service {
                     workflow_state_machine::UNDER_REVIEW], true)) {
                 throw new \moodle_exception('invalidtransition', 'local_syllabusworkflow');
             }
-            $pending = $DB->get_record('local_swf_assignment', [
+            $pending = $DB->get_record('local_syllabusworkflow_assignment', [
                 'versionid' => $version->id, 'status' => 'pending',
             ], '*', MUST_EXIST);
-            $DB->set_field('local_swf_assignment', 'reviewerid', $newreviewer, ['id' => $pending->id]);
+            $DB->set_field('local_syllabusworkflow_assignment', 'reviewerid', $newreviewer, ['id' => $pending->id]);
             audit_history::log($version, 'delegated', $actorid, (string)$newreviewer);
             $transaction->allow_commit();
         });

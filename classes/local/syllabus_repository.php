@@ -23,23 +23,57 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Syllabus repository implementation.
+ */
 final class syllabus_repository {
+    /**
+     * Plan.
+     *
+     * @param int $id id
+     * @return \stdClass
+     */
     public static function plan(int $id): \stdClass {
         global $DB;
-        return $DB->get_record('local_swf_plan', ['id' => $id], '*', MUST_EXIST);
+        return $DB->get_record('local_syllabusworkflow_plan', ['id' => $id], '*', MUST_EXIST);
     }
+    /**
+     * Version.
+     *
+     * @param int $id id
+     * @return \stdClass
+     */
     public static function version(int $id): \stdClass {
         global $DB;
-        return $DB->get_record('local_swf_version', ['id' => $id], '*', MUST_EXIST);
+        return $DB->get_record('local_syllabusworkflow_version', ['id' => $id], '*', MUST_EXIST);
     }
+    /**
+     * Template.
+     *
+     * @param int $id id
+     * @return \stdClass
+     */
     public static function template(int $id): \stdClass {
         global $DB;
-        return $DB->get_record('local_swf_tplversion', ['id' => $id], '*', MUST_EXIST);
+        return $DB->get_record('local_syllabusworkflow_tplversion', ['id' => $id], '*', MUST_EXIST);
     }
+    /**
+     * Course context.
+     *
+     * @param \stdClass $plan plan
+     * @return \context_course
+     */
     public static function course_context(\stdClass $plan): \context_course {
         return \context_course::instance($plan->courseid);
     }
+    /**
+     * Readable version.
+     *
+     * @param \stdClass $plan plan
+     * @param int $requested requested
+     * @param int $userid userid
+     * @return \stdClass
+     */
     public static function readable_version(\stdClass $plan, int $requested, int $userid): \stdClass {
         $context = self::course_context($plan);
         if (!has_capability('local/syllabusworkflow:view', $context, $userid) &&

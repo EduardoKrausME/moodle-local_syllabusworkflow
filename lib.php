@@ -22,7 +22,6 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
 function local_syllabusworkflow_extend_navigation_course(\navigation_node $navigation,
         \stdClass $course, \context_course $context): void {
     if (!has_capability('local/syllabusworkflow:view', $context) &&

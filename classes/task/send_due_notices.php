@@ -23,17 +23,29 @@
  */
 
 namespace local_syllabusworkflow\task;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Send due notices implementation.
+ */
 final class send_due_notices extends \core\task\scheduled_task {
+    /**
+     * Get name.
+     *
+     * @return string
+     */
     public function get_name(): string {
         return get_string('taskduedates', 'local_syllabusworkflow');
     }
+    /**
+     * Execute.
+     *
+     * @return void
+     */
     public function execute(): void {
         global $DB;
         $today = strtotime('today');
         $end = $today + 3 * DAYSECS;
-        $sql = "SELECT a.* FROM {local_swf_assignment} a
-                 JOIN {local_swf_version} v ON v.id = a.versionid
+        $sql = "SELECT a.* FROM {local_syllabusworkflow_assignment} a
+                 JOIN {local_syllabusworkflow_version} v ON v.id = a.versionid
                 WHERE a.status = :status AND a.duedate > 0
                   AND a.duedate < :deadline
                   AND v.status IN (:submitted, :review)";

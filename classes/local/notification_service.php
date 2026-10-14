@@ -23,8 +23,19 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Notification service implementation.
+ */
 final class notification_service {
+    /**
+     * Send.
+     *
+     * @param int $versionid versionid
+     * @param int $recipientid recipientid
+     * @param string $kind kind
+     * @param string $key key
+     * @return bool
+     */
     public static function send(int $versionid, int $recipientid, string $kind, string $key): bool {
         global $DB;
         if ($recipientid <= 0 || !in_array($kind,
@@ -38,7 +49,7 @@ final class notification_service {
             throw new \moodle_exception('lockfailed', 'local_syllabusworkflow');
         }
         try {
-            if ($DB->record_exists('local_swf_notice', ['dedupekey' => $digest])) {
+            if ($DB->record_exists('local_syllabusworkflow_notice', ['dedupekey' => $digest])) {
                 return false;
             }
             $version = syllabus_repository::version($versionid);
@@ -64,7 +75,7 @@ final class notification_service {
             $message->contexturl = (new \moodle_url('/local/syllabusworkflow/view.php', ['id' => $plan->id]))->out(false);
             $message->contexturlname = get_string('pluginname', 'local_syllabusworkflow');
             // Reserve key before sending to avoid duplicates across worker retries.
-            $id = $DB->insert_record('local_swf_notice', (object)[
+            $id = $DB->insert_record('local_syllabusworkflow_notice', (object)[
                 'versionid' => $versionid, 'recipientid' => $recipientid, 'kind' => $kind,
                 'dedupekey' => $digest, 'timesent' => time(),
             ]);
@@ -73,7 +84,7 @@ final class notification_service {
                     throw new \moodle_exception('sendfailed', 'local_syllabusworkflow');
                 }
             } catch (\Throwable $e) {
-                $DB->delete_records('local_swf_notice', ['id' => $id]);
+                $DB->delete_records('local_syllabusworkflow_notice', ['id' => $id]);
                 throw $e;
             }
             return true;

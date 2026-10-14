@@ -23,10 +23,17 @@
  */
 
 namespace local_syllabusworkflow\form;
-defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
+/**
+ * Template form implementation.
+ */
 final class template_form extends \moodleform {
+    /**
+     * Definition.
+     *
+     * @return void
+     */
     protected function definition(): void {
         $mform = $this->_form;
         $mform->addElement('text', 'name', get_string('templatename', 'local_syllabusworkflow'));

@@ -23,14 +23,22 @@
  */
 
 namespace local_syllabusworkflow\local;
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Schema implementation.
+ */
 final class schema {
+    /** Fields. */
     public const FIELDS = [
         'courseidentification', 'disciplinename', 'disciplinecode', 'term', 'workload',
         'teacher', 'syllabus', 'generalobjectives', 'specificobjectives', 'competencies',
         'contents', 'methodology', 'resources', 'assessmentcriteria', 'assessmenttools',
         'schedule', 'bibliography', 'furtherbibliography', 'institutionalnotes',
     ];
+    /**
+     * Defaults.
+     *
+     * @return array
+     */
     public static function defaults(): array {
         $fields = [];
         foreach (self::FIELDS as $name) {
@@ -40,6 +48,12 @@ final class schema {
         }
         return $fields;
     }
+    /**
+     * Validate definition.
+     *
+     * @param array $fields fields
+     * @return void
+     */
     public static function validate_definition(array $fields): void {
         $seen = [];
         foreach ($fields as $field) {
@@ -70,6 +84,14 @@ final class schema {
             throw new \moodle_exception('invalidschema', 'local_syllabusworkflow');
         }
     }
+    /**
+     * Validate payload.
+     *
+     * @param array $data data
+     * @param array $fields fields
+     * @param ?array $previous previous
+     * @return array
+     */
     public static function validate_payload(array $data, array $fields, ?array $previous = null): array {
         self::validate_definition($fields);
         $clean = [];
@@ -77,7 +99,8 @@ final class schema {
             $key = $field['key'];
             $value = $data[$key] ?? '';
             if (!is_string($value) || \core_text::strlen($value) > 20000) {
-                throw new \moodle_exception('invalidfield', 'local_syllabusworkflow', '', get_string($key, 'local_syllabusworkflow'));
+                throw new \moodle_exception('invalidfield', 'local_syllabusworkflow', '',
+                    get_string($key, 'local_syllabusworkflow'));
             }
             $value = trim($value);
             if (isset($field['maxlen']) && (int)$field['maxlen'] > 0 &&
@@ -97,6 +120,12 @@ final class schema {
         }
         return $clean;
     }
+    /**
+     * Decode.
+     *
+     * @param string $json json
+     * @return array
+     */
     public static function decode(string $json): array {
         $value = json_decode($json, true, 64, JSON_THROW_ON_ERROR);
         if (!is_array($value)) {
@@ -104,6 +133,12 @@ final class schema {
         }
         return $value;
     }
+    /**
+     * Encode.
+     *
+     * @param array $value value
+     * @return string
+     */
     public static function encode(array $value): string {
         return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
