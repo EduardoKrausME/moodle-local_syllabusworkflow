@@ -22,6 +22,9 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Behat steps for creating and browsing syllabus plans.
+ */
 class behat_local_syllabusworkflow extends behat_base {
     /**
      * Create a documented state using the public workflow services.

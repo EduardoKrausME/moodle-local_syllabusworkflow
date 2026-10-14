@@ -22,6 +22,14 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Add a syllabus link to course navigation for authorised participants.
+ *
+ * @param \navigation_node $navigation Course navigation node.
+ * @param \stdClass $course Moodle course.
+ * @param \context_course $context Course context.
+ * @return void
+ */
 function local_syllabusworkflow_extend_navigation_course(\navigation_node $navigation,
         \stdClass $course, \context_course $context): void {
     if (!has_capability('local/syllabusworkflow:view', $context) &&

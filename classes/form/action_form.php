@@ -23,6 +23,7 @@
  */
 
 namespace local_syllabusworkflow\form;
+defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 /**

@@ -222,6 +222,7 @@ final class workflow_test extends \advanced_testcase {
      * @return void
      */
     public function test_archival_revokes_current_public_visibility(): void {
+        global $DB;
         $tuple = $this->fixtures();
         $this->complete($tuple);
         [$course, $teacher, $manager, $template, $version] = $tuple;
@@ -229,6 +230,9 @@ final class workflow_test extends \advanced_testcase {
         approval_service::begin($version->planid, $manager->id);
         approval_service::decide($version->planid, $manager->id, true, 'Checked');
         publication_service::publish($version->planid, $manager->id);
+        // Archiving is restricted to the system manager capability, not a course manager role.
+        $managerrole = $DB->get_field('role', 'id', ['shortname' => 'manager'], MUST_EXIST);
+        role_assign($managerrole, $manager->id, \context_system::instance()->id);
         publication_service::archive($version->planid, $manager->id);
         $this->assertEmpty(syllabus_repository::plan($version->planid)->publishedversionid);
         $this->assertSame('archived', syllabus_repository::version($version->id)->status);
