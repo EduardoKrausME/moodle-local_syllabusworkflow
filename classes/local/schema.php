@@ -98,13 +98,13 @@ final class schema {
         foreach ($fields as $field) {
             $key = $field['key'];
             $value = $data[$key] ?? '';
-            if (!is_string($value) || \core_text::strlen($value) > 20000) {
+            if (!is_string($value) || strlen($value) > 20000) {
                 throw new \moodle_exception('invalidfield', 'local_syllabusworkflow', '',
                     get_string($key, 'local_syllabusworkflow'));
             }
             $value = trim($value);
             if (isset($field['maxlen']) && (int)$field['maxlen'] > 0 &&
-                    \core_text::strlen($value) > (int)$field['maxlen']) {
+                    strlen($value) > (int)$field['maxlen']) {
                 throw new \moodle_exception('invalidfield', 'local_syllabusworkflow', '',
                     get_string($key, 'local_syllabusworkflow'));
             }
