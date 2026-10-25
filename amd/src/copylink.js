@@ -24,8 +24,8 @@
 define(["core/notification"], function(Notification) {
     /** Copy a plan URL on explicit user interaction. */
     const init = () => {
-        document.querySelectorAll('[data-swf-copy]').forEach((element) => {
-            element.addEventListener('click', async () => {
+        document.querySelectorAll("[data-swf-copy]").forEach((element) => {
+            element.addEventListener("click", async () => {
                 try {
                     await navigator.clipboard.writeText(element.dataset.swfCopy);
                 } catch (error) {
