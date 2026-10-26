@@ -8,15 +8,6 @@ Institutional course syllabus preparation, approval and publication within Moodl
 - An installation where Moodle scheduled tasks, messages and locks are configured.
 - Administrative access for capability configuration and reviewer role assignments.
 
-## Installation
-
-1. Copy the plugin into `local/syllabusworkflow` (do not nest the repository directory twice).
-2. Open **Site administration → Notifications** or run `php admin/cli/upgrade.php --non-interactive`.
-3. Configure course roles: editing teachers need `local/syllabusworkflow:edit`, reviewers need `:review` and `:approve`, and publication staff need `:publish`. Students need `:view` to see published plans.
-4. Assign `local/syllabusworkflow:manage` only at system context to trusted administrators. `:selfapprove` is intentionally denied to every standard archetype.
-5. Configure the institutional templates from **Site administration → Courses → Syllabus workflow**. Stages accept reviewer user IDs, with `reviewerid: 0` as a substitute requiring an explicit reviewer on submission.
-6. Make sure Moodle cron runs and Moodle message delivery is enabled.
-
 ## Workflow
 
 Draft → Submitted → Under review → Approved → Published → Archived.
