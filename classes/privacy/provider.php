@@ -393,6 +393,42 @@ final class provider implements \core_privacy\local\metadata\provider,
     }
 
     /**
+     * Remove a draft which has never entered the institutional approval history.
+     *
+     * @param int $courseid course ID
+     * @param ?int $userid creator, or null to remove all eligible drafts
+     * @return void
+     */
+    private static function delete_unpublished_drafts(int $courseid, ?int $userid): void {
+        global $DB;
+        $conditions = ['courseid' => $courseid, 'publishedversionid' => null];
+        if ($userid !== null) {
+            $conditions['createdby'] = $userid;
+        }
+        foreach ($DB->get_records('local_syllabusworkflow_plan', $conditions) as $plan) {
+            $versions = $DB->get_records('local_syllabusworkflow_version', ['planid' => $plan->id]);
+            if (count($versions) !== 1 || reset($versions)->status !== 'draft') {
+                continue;
+            }
+            $version = reset($versions);
+            $transaction = $DB->start_delegated_transaction();
+            foreach ([
+                'local_syllabusworkflow_notice',
+                'local_syllabusworkflow_audit',
+                'local_syllabusworkflow_transition',
+                'local_syllabusworkflow_assignment',
+                'local_syllabusworkflow_approval',
+                'local_syllabusworkflow_publication',
+            ] as $table) {
+                $DB->delete_records($table, ['versionid' => $version->id]);
+            }
+            $DB->delete_records('local_syllabusworkflow_version', ['id' => $version->id]);
+            $DB->delete_records('local_syllabusworkflow_plan', ['id' => $plan->id]);
+            $transaction->allow_commit();
+        }
+    }
+
+    /**
      * Anonymise creator references and configured reviewer IDs in institutional templates.
      *
      * @param ?int $userid user ID, or null for all users
@@ -442,6 +478,7 @@ final class provider implements \core_privacy\local\metadata\provider,
         if ($context->contextlevel === CONTEXT_SYSTEM) {
             self::anonymise_templates(null);
         } else if ($context->contextlevel === CONTEXT_COURSE) {
+            self::delete_unpublished_drafts($context->instanceid, null);
             self::anonymise_course($context->instanceid, null);
         }
     }
@@ -458,6 +495,7 @@ final class provider implements \core_privacy\local\metadata\provider,
             if ($context->contextlevel === CONTEXT_SYSTEM) {
                 self::anonymise_templates($userid);
             } else if ($context->contextlevel === CONTEXT_COURSE) {
+                self::delete_unpublished_drafts($context->instanceid, $userid);
                 self::anonymise_course($context->instanceid, $userid);
             }
         }
@@ -475,6 +513,7 @@ final class provider implements \core_privacy\local\metadata\provider,
             if ($context->contextlevel === CONTEXT_SYSTEM) {
                 self::anonymise_templates((int)$userid);
             } else if ($context->contextlevel === CONTEXT_COURSE) {
+                self::delete_unpublished_drafts($context->instanceid, (int)$userid);
                 self::anonymise_course($context->instanceid, (int)$userid);
             }
         }
