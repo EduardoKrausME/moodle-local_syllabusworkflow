@@ -24,6 +24,8 @@
 
 namespace local_syllabusworkflow;
 
+use core_privacy\local\metadata\collection;
+use core_privacy\local\metadata\types\database_table;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\userlist;
@@ -86,6 +88,38 @@ final class privacy_provider_test extends \advanced_testcase {
         ]);
         return compact('course', 'owner', 'reviewer', 'other', 'templateversionid',
             'planid', 'versionid', 'assignmentid');
+    }
+
+    /**
+     * Every table and user ID field from the schema must be declared.
+     */
+    public function test_metadata_includes_all_user_references(): void {
+        $metadata = provider::get_metadata(new collection('local_syllabusworkflow'));
+        $tables = [];
+        foreach ($metadata->get_collection() as $type) {
+            if ($type instanceof database_table) {
+                $tables[$type->get_name()] = $type->get_privacy_fields();
+            }
+        }
+        $this->assertArrayHasKey('recipientid', $tables['local_syllabusworkflow_notice']);
+        $this->assertArrayHasKey('createdby', $tables['local_syllabusworkflow_tplversion']);
+        $this->assertArrayHasKey('workflowjson', $tables['local_syllabusworkflow_tplversion']);
+        $this->assertArrayHasKey('assignedby', $tables['local_syllabusworkflow_assignment']);
+        $this->assertArrayHasKey('reviewerid', $tables['local_syllabusworkflow_approval']);
+    }
+
+    /**
+     * Future revisions still work when the original author was erased.
+     */
+    public function test_snapshot_handles_anonymised_creator(): void {
+        global $DB;
+        $r = $this->records();
+        $DB->set_field('local_syllabusworkflow_plan', 'createdby', 0, ['id' => $r['planid']]);
+        $plan = $DB->get_record('local_syllabusworkflow_plan', ['id' => $r['planid']]);
+        $template = $DB->get_record('local_syllabusworkflow_tplversion', ['id' => $r['templateversionid']]);
+        $snapshot = \local_syllabusworkflow\local\version_manager::snapshot($plan, $template);
+        $this->assertSame(get_string('privacy:formeruser', 'local_syllabusworkflow'),
+            json_decode($snapshot, true)['author']);
     }
 
     /**
