@@ -75,11 +75,16 @@ final class version_manager {
     public static function snapshot(\stdClass $plan, \stdClass $template): string {
         global $DB;
         $course = $DB->get_record('course', ['id' => $plan->courseid], 'id,fullname,shortname,idnumber', MUST_EXIST);
-        $author = $DB->get_record('user', ['id' => $plan->createdby], '*', MUST_EXIST);
+        // The plan creator may have been anonymised by a Privacy API erasure.
+        // A later revision must still be possible without resolving user ID 0.
+        $author = $plan->createdby > 0
+            ? $DB->get_record('user', ['id' => $plan->createdby]) : false;
+        $authorname = $author ? fullname($author)
+            : get_string('privacy:formeruser', 'local_syllabusworkflow');
         return schema::encode([
             'courseid' => $course->id, 'fullname' => $course->fullname,
             'shortname' => $course->shortname, 'idnumber' => $course->idnumber,
-            'author' => fullname($author), 'templateid' => $template->templateid,
+            'author' => $authorname, 'templateid' => $template->templateid,
             'templateversion' => $template->revision,
             'templatename' => $DB->get_field('local_syllabusworkflow_template', 'name', ['id' => $template->templateid]),
             'institution' => schema::decode($template->identityjson),
