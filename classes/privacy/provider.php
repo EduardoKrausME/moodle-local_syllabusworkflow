@@ -283,7 +283,7 @@ final class provider implements \core_privacy\local\metadata\provider,
                         $data->$table = array_values($related);
                     }
                 }
-                if (!$isowner && !$isauthor && !$data) {
+                if (!$isowner && !$isauthor && !get_object_vars($data)) {
                     continue;
                 }
                 writer::with_context($context)->export_data([
@@ -337,6 +337,20 @@ final class provider implements \core_privacy\local\metadata\provider,
                         }
                         // No need to retain notification delivery ledgers after erasure.
                         $DB->delete_records($table, $conditions);
+                        continue;
+                    }
+                    if ($table === 'local_syllabusworkflow_assignment') {
+                        // The (versionid, stage, reviewerid) uniqueness constraint forbids
+                        // replacing several reviewer IDs with the same zero value.
+                        foreach ($DB->get_records($table, $conditions) as $assignment) {
+                            if ($userid === null || (int)$assignment->reviewerid === $userid) {
+                                $DB->set_field($table, 'reviewerid', -(int)$assignment->id,
+                                    ['id' => $assignment->id]);
+                            }
+                            if ($userid === null || (int)$assignment->assignedby === $userid) {
+                                $DB->set_field($table, 'assignedby', 0, ['id' => $assignment->id]);
+                            }
+                        }
                         continue;
                     }
                     foreach ($columns as $column) {
