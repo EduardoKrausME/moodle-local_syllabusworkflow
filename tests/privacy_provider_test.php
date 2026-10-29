@@ -192,6 +192,44 @@ final class privacy_provider_test extends \advanced_testcase {
     }
 
     /**
+     * An unpublished single-version draft is disposable, unlike approved history.
+     */
+    public function test_delete_unpublished_draft_removes_its_records(): void {
+        global $DB;
+        $r = $this->records();
+        $DB->set_field('local_syllabusworkflow_version', 'status', 'draft',
+            ['id' => $r['versionid']]);
+        provider::delete_data_for_user(new approved_contextlist($r['owner'],
+            'local_syllabusworkflow', [\context_course::instance($r['course']->id)->id]));
+        $this->assertFalse($DB->record_exists('local_syllabusworkflow_plan', ['id' => $r['planid']]));
+        $this->assertFalse($DB->record_exists('local_syllabusworkflow_version', ['id' => $r['versionid']]));
+        $this->assertFalse($DB->record_exists('local_syllabusworkflow_assignment',
+            ['versionid' => $r['versionid']]));
+        $this->assertFalse($DB->record_exists('local_syllabusworkflow_notice',
+            ['versionid' => $r['versionid']]));
+        $this->assertTrue($DB->record_exists('local_syllabusworkflow_tplversion',
+            ['id' => $r['templateversionid']]));
+    }
+
+    /**
+     * Assignment uniqueness must survive anonymising several reviewers in one stage.
+     */
+    public function test_multiple_reviewer_assignments_remain_unique(): void {
+        global $DB;
+        $r = $this->records();
+        $otherassignment = $DB->insert_record('local_syllabusworkflow_assignment', (object)[
+            'versionid' => $r['versionid'], 'stage' => 0, 'reviewerid' => $r['other']->id,
+            'assignedby' => $r['owner']->id, 'status' => 'completed',
+            'duedate' => 0, 'timecreated' => time(),
+        ]);
+        provider::delete_data_for_all_users_in_context(\context_course::instance($r['course']->id));
+        $this->assertSame(-$r['assignmentid'], (int)$DB->get_field(
+            'local_syllabusworkflow_assignment', 'reviewerid', ['id' => $r['assignmentid']]));
+        $this->assertSame(-$otherassignment, (int)$DB->get_field(
+            'local_syllabusworkflow_assignment', 'reviewerid', ['id' => $otherassignment]));
+    }
+
+    /**
      * Deleting course context data must not delete the institutional audit history.
      */
     public function test_delete_all_users_in_course_preserves_approval(): void {
