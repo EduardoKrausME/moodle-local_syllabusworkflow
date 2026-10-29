@@ -92,6 +92,7 @@ $string['privacy:identityjson'] = 'Identidade institucional associada ao modelo'
 $string['privacy:templates'] = 'Revisões dos modelos institucionais';
 $string['privacy:workflowjson'] = 'Revisores configurados nas etapas de aprovação institucional';
 $string['privacy:createdby'] = 'Criador do plano ou da revisão';
+$string['privacy:formeruser'] = 'Usuário removido';
 $string['privacy:history'] = 'Histórico institucional de auditoria';
 $string['privacy:messages'] = 'Notificações de mensagens';
 $string['privacy:payload'] = 'Conteúdo do plano de ensino';
