@@ -251,12 +251,21 @@ final class provider implements \core_privacy\local\metadata\provider,
         $plans = $DB->get_records('local_syllabusworkflow_plan', ['courseid' => $context->instanceid]);
         foreach ($plans as $plan) {
             $isowner = (int)$plan->createdby === $userid;
+            if ($isowner) {
+                writer::with_context($context)->export_data([
+                    get_string('pluginname', 'local_syllabusworkflow'),
+                    (string)$plan->id, 'plan',
+                ], (object)[
+                    'createdby' => $userid,
+                    'timecreated' => $plan->timecreated,
+                ]);
+            }
             foreach ($DB->get_records('local_syllabusworkflow_version', ['planid' => $plan->id]) as $version) {
                 $isauthor = (int)$version->createdby === $userid;
                 $data = (object)[];
                 if ($isowner || $isauthor) {
                     $data->version = (object)[
-                        'createdby' => $version->createdby,
+                        'createdby' => $isauthor ? $userid : null,
                         'status' => $version->status,
                         'payload' => $version->payload,
                         'snapshot' => $version->snapshot,
@@ -274,7 +283,14 @@ final class provider implements \core_privacy\local\metadata\provider,
                     foreach ($DB->get_records($table, $conditions) as $record) {
                         foreach ($columns as $column) {
                             if ((int)$record->$column === $userid) {
-                                $related[] = $record;
+                                // Do not export unrelated users' identifiers from shared rows.
+                                $copy = clone $record;
+                                foreach ($columns as $personalcolumn) {
+                                    if ((int)$copy->$personalcolumn !== $userid) {
+                                        $copy->$personalcolumn = null;
+                                    }
+                                }
+                                $related[] = $copy;
                                 break;
                             }
                         }
