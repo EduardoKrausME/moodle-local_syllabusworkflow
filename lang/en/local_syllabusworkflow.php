@@ -92,6 +92,7 @@ $string['privacy:identityjson'] = 'Institutional identity associated with a temp
 $string['privacy:templates'] = 'Institutional template revisions';
 $string['privacy:workflowjson'] = 'Configured reviewers in institutional approval stages';
 $string['privacy:createdby'] = 'Plan or revision creator';
+$string['privacy:formeruser'] = 'Former user';
 $string['privacy:history'] = 'Institutional audit history';
 $string['privacy:messages'] = 'Message notifications';
 $string['privacy:payload'] = 'Syllabus document body';
