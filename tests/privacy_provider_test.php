@@ -129,12 +129,13 @@ final class privacy_provider_test extends \advanced_testcase {
         $r = $this->records();
         $coursecontext = \context_course::instance($r['course']->id);
         $systemcontext = \context_system::instance();
-        $ownercontexts = provider::get_contexts_for_userid($r['owner']->id)->get_contextids();
-        $reviewercontexts = provider::get_contexts_for_userid($r['reviewer']->id)->get_contextids();
-        $this->assertContains($coursecontext->id, $ownercontexts);
-        $this->assertContains($systemcontext->id, $ownercontexts);
-        $this->assertContains($coursecontext->id, $reviewercontexts);
-        $this->assertContains($systemcontext->id, $reviewercontexts);
+        // Database drivers may return context IDs as numeric strings.
+        $ownercontexts = array_map('intval', provider::get_contexts_for_userid($r['owner']->id)->get_contextids());
+        $reviewercontexts = array_map('intval', provider::get_contexts_for_userid($r['reviewer']->id)->get_contextids());
+        $this->assertContains((int)$coursecontext->id, $ownercontexts);
+        $this->assertContains((int)$systemcontext->id, $ownercontexts);
+        $this->assertContains((int)$coursecontext->id, $reviewercontexts);
+        $this->assertContains((int)$systemcontext->id, $reviewercontexts);
         $courseusers = new userlist($coursecontext, 'local_syllabusworkflow');
         provider::get_users_in_context($courseusers);
         $this->assertContains((int)$r['owner']->id, $courseusers->get_userids());
