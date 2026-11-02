@@ -4,6 +4,29 @@ This changelog records only the two latest **published** releases of `local_syll
 
 **Post-release note:** The October 24, 2026, 21:52 BRT (`2026-10-25T00:52:49Z`) `Build` commit updated `amd/build/copylink.min.js` **after** release `1.0.3` was published at 21:47 BRT. That compiled-asset change is not included in the published `1.0.3` tag, although the related `amd/src/copylink.js` source changes are. The release summaries below exclude post-release commits.
 
+## 1.0.6 - 2026-10-30
+
+- Alphabetized English and Brazilian Portuguese privacy language strings.
+- Normalized database context identifiers in strict Privacy API regression assertions.
+
+**Full comparison:** [1.0.5...1.0.6](https://github.com/EduardoKrausME/moodle-local_syllabusworkflow/compare/1.0.5...1.0.6)
+
+## 1.0.5 - 2026-10-29
+
+- Expanded Privacy API user-reference discovery, user-list operations, exports and anonymization for syllabus creators, reviewers and course templates.
+- Prevented assignment unique-index collisions and preserved eligible unpublished-draft deletion.
+- Allowed new syllabus revisions after creator anonymization and identified anonymized creators in later revisions.
+- Added privacy regression tests for user scopes, export metadata, revision snapshots and draft deletion.
+
+**Full comparison:** [1.0.4...1.0.5](https://github.com/EduardoKrausME/moodle-local_syllabusworkflow/compare/1.0.4...1.0.5)
+
+## 1.0.4 - 2026-10-29
+
+- Regenerated the copy-link AMD asset and refreshed historical release documentation.
+- Removed installation instructions from the README; no additional runtime source changes were identified.
+
+**Full comparison:** [1.0.3...1.0.4](https://github.com/EduardoKrausME/moodle-local_syllabusworkflow/compare/1.0.3...1.0.4)
+
 ## [1.0.3] - 2026-10-24
 
 ### Fixed
