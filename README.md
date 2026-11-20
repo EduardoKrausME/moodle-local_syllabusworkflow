@@ -25,13 +25,13 @@ There are 19 supported sections: course identification, discipline name and code
 
 ## UI and routes
 
-- `/local/syllabusworkflow/index.php?courseid=COURSE_ID` — course dashboard.
-- `/local/syllabusworkflow/edit.php?courseid=COURSE_ID` — create and save a draft.
-- `/local/syllabusworkflow/view.php?id=PLAN_ID` — current revision for staff, published revision for enrolled viewers.
-- `/local/syllabusworkflow/compare.php?id=PLAN_ID` — compare two historical versions.
-- `/local/syllabusworkflow/template.php` — institutional template creation/versioning (system managers).
-- `/local/syllabusworkflow/report.php` — pending and approved plans (system managers).
-- `/local/syllabusworkflow/export.php?id=PLAN_ID` — browser/printable HTML export or an HTML attachment (`download=1`), without an improvised PDF library.
+- `/local/syllabusworkflow/index.php?courseid=COURSE_ID` - course dashboard.
+- `/local/syllabusworkflow/edit.php?courseid=COURSE_ID` - create and save a draft.
+- `/local/syllabusworkflow/view.php?id=PLAN_ID` - current revision for staff, published revision for enrolled viewers.
+- `/local/syllabusworkflow/compare.php?id=PLAN_ID` - compare two historical versions.
+- `/local/syllabusworkflow/template.php` - institutional template creation/versioning (system managers).
+- `/local/syllabusworkflow/report.php` - pending and approved plans (system managers).
+- `/local/syllabusworkflow/export.php?id=PLAN_ID` - browser/printable HTML export or an HTML attachment (`download=1`), without an improvised PDF library.
 
 The `view.php` URL may be added to a course as a URL resource **manually** by an authorized teacher. This plugin does **not** automatically update the course summary or content, and its course navigation link is added only when a user has syllabus capabilities.
 
